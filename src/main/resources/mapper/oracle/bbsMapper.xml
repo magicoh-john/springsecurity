@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.magicoh.springmvc.dao.IQnaBbsMapperDao"> <!-- namespace 생성 양식 : 패키지명.인터페이스명  -->
+
+	<!-- Category -->
+	<select id="selectQnaBbsList" resultType="QnaBbs"> 
+	<![CDATA[ 
+		SELECT NO, TITLE, CONTENT, WRITER, HIT, REGDATE
+		FROM BBS
+		WHERE 1 = 1
+		ORDER BY NO DESC
+	]]>
+	</select>
+</mapper>

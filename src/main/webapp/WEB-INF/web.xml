@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="2.5" 
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+		xmlns="http://java.sun.com/xml/ns/javaee" 
+		xsi:schemaLocation="http://java.sun.com/xml/ns/javaee 
+							https://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" >
+  
+  <context-param>
+    <param-name>contextConfigLocation</param-name>
+    <param-value>/WEB-INF/spring/application-context.xml,
+    			/WEB-INF/spring/security-context.xml</param-value>
+  </context-param>
+  <listener>
+    <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+  </listener>
+  
+  <servlet>
+    <servlet-name>appServlet</servlet-name>
+    <servlet-class>org.springframework.web.servlet.DispatcherServlet
+		</servlet-class>
+    <init-param>
+      <param-name>contextConfigLocation</param-name>
+      <param-value>
+      			/WEB-INF/spring/appServlet/servlet-context.xml,
+    			/WEB-INF/spring/security-context.xml
+	  </param-value>
+    </init-param>
+    <init-param>
+      <param-name>dispatchOptionsRequest</param-name>
+      <param-value>true</param-value>
+    </init-param>
+	<!-- Exception Handling -->
+	<init-param>
+		<param-name>throwExceptionIfNoHandlerFound</param-name>
+		<param-value>true</param-value>
+	</init-param>
+    <load-on-startup>1</load-on-startup>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>appServlet</servlet-name>
+    <url-pattern>/</url-pattern>
+  </servlet-mapping>
+  
+    <!-- 한글 인코딩 필터 -->
+  <filter>
+    <filter-name>encodingFilter</filter-name>
+    <filter-class>org.springframework.web.filter.CharacterEncodingFilter
+		</filter-class>
+    <init-param>
+      <param-name>encoding</param-name>
+      <param-value>UTF-8</param-value>
+    </init-param>
+    <init-param>
+      <param-name>forceEncoding</param-name>
+      <param-value>true</param-value>
+    </init-param>
+  </filter>
+  <filter-mapping>
+    <filter-name>encodingFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+  
+  	<!-- JSP Access Denied -->
+	<security-constraint>
+	  <web-resource-collection>
+	    <web-resource-name>PreventViewingJSPs</web-resource-name>
+	    <description>JSP Access Denied</description>
+	    <url-pattern>*.jsp</url-pattern>
+	    <http-method>GET</http-method>
+	    <http-method>POST</http-method>
+	    <http-method>PUT</http-method>
+	    <http-method>DELETE</http-method>
+	  </web-resource-collection>
+	  <auth-constraint />
+	</security-constraint>
+  
+  <!-- prevent one user multi login -->
+  <listener> 
+  	<listener-class>org.springframework.security.web.session.HttpSessionEventPublisher</listener-class> 
+  </listener>
+
+  
+	<!-- Spring Security Filter -->
+    <filter>
+      <filter-name>springSecurityFilterChain</filter-name>
+      <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+    </filter>
+    <filter-mapping>
+      <filter-name>springSecurityFilterChain</filter-name>
+      <url-pattern>/*</url-pattern>
+    </filter-mapping>
+	
+  <!-- Page Error Patch -->
+  <error-page>
+    <error-code>403</error-code>
+    <location>/WEB-INF/views/error/403.jsp</location>
+  </error-page>
+  <error-page>
+    <error-code>404</error-code>
+    <location>/WEB-INF/views/error/404.jsp</location>
+  </error-page>
+  
+  <servlet>
+    <description></description>
+    <display-name>SalesController</display-name>
+    <servlet-name>SalesController</servlet-name>
+    <servlet-class>com.magicoh.springmvc.controller.SalesController
+		</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>SalesController</servlet-name>
+    <url-pattern>/sales</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+    <description></description>
+    <display-name>InvoiceController</display-name>
+    <servlet-name>InvoiceController</servlet-name>
+    <servlet-class>com.magicoh.springmvc.controller.InvoiceController
+		</servlet-class>
+  </servlet>  
+  <servlet-mapping>
+    <servlet-name>InvoiceController</servlet-name>
+    <url-pattern>/Invoice</url-pattern>
+  </servlet-mapping>  
+  
+
+
+</web-app>

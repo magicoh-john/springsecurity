@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-config.dtd">
+  
+<!-- MyBatis 설정 파일로 사용, Mapper의 ResultType에서 사용할 alias 설정-->
+<configuration>
+
+<!-- mybatis cache disabled -->
+<settings> 
+	<setting name="cacheEnabled" value="false"/> 
+</settings>
+
+
+	<!-- -->
+	<!--  
+	<properties resource="database.properties"/>
+	-->
+	<!--  
+	 <environments default="development">
+	        <environment id="development">
+	            <transactionManager type="JDBC"/>
+	            <dataSource type="JNDI">
+	                <property name="driver" value="${driver}"/>
+	                <property name="url" value="${url}"/>
+	                <property name="username" value="${username}"/>
+	                <property name="password" value="${password}"/>
+	            </dataSource>
+	        </environment>
+	    </environments>
+		-->
+	<typeAliases>
+		<typeAlias type="com.magicoh.springmvc.dto.Category" alias="Category" />
+		<typeAlias type="com.magicoh.springmvc.dto.Product" alias="Product" />
+		<typeAlias type="com.magicoh.springmvc.dto.InvoiceHeader" alias="InvoiceHeader" />
+		<typeAlias type="com.magicoh.springmvc.dto.InvoiceDetail" alias="InvoiceDetail" />
+		<typeAlias type="com.magicoh.springmvc.dto.Client" alias="Client" />
+		<typeAlias type="com.magicoh.springmvc.dto.UserSec" alias="UserSec" />
+		<typeAlias type="com.magicoh.springmvc.dto.User" alias="User" />
+		<typeAlias type="com.magicoh.springmvc.dto.CustomUser" alias="CustomUser" />
+		<typeAlias type="com.magicoh.springmvc.dto.UserRole" alias="UserRole" />
+		<typeAlias type="com.magicoh.springmvc.dto.QnaBbs" alias="QnaBbs" />
+		<typeAlias type="com.magicoh.springmvc.dto.AddressVo" alias="AddressVo" />
+		<typeAlias type="com.magicoh.springmvc.dto.InvoiceCommonDto" alias="InvoiceCommonDto" />
+	</typeAliases>
+
+
+	<!--  
+	<settings>
+		<setting name="logImpl" value="LOG4J"/>
+	</settings>
+	-->
+	
+<!-- 	<mappers> -->
+<!-- 		<mapper resource="IDao.xml" /> -->
+<!-- 	</mappers> -->
+</configuration>

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper	namespace="com.magicoh.springmvc.dao.IUserMapperDao">
+	
+	<select id="getUserByUsername" parameterType="String" resultType="CustomUser">
+		SELECT * FROM USERS 
+		WHERE USER_ID = #{param1}
+	</select>
+
+	<select id="getAddressByDong" parameterType="String" resultType="AddressVo">
+	<![CDATA[ 
+		SELECT 
+			ZIP_NUM,
+			SIDO,
+			GUGUN,
+			DONG,
+			ZIP_CODE,
+			BUNJI 
+		FROM ADDRESS
+		WHERE 1=1
+		AND ROWNUM <= 20
+	]]>	
+		<if test="param1 != null and param1 !=''">
+			AND DONG LIKE '%'||#{param1, jdbcType=VARCHAR}||'%'
+		</if>
+	</select>
+
+	<select id="getUserRolesByUsername" parameterType="String" resultType="UserRole">
+		SELECT * 
+		FROM USER_ROLE 
+		WHERE USER_ID = #{param1}
+	</select>
+	
+	<select id="hasUsername" resultType="int" parameterType="String">
+		SELECT COUNT(*) FROM USERS
+		WHERE user_id = #{param1}
+	</select>
+
+	<select id="getCountIdById" resultType="int" parameterType="String">
+		SELECT COUNT(*) FROM USERS
+		WHERE USERNAME = #{param1}
+	</select>
+	
+	<insert id="insertUser" parameterType="CustomUser">
+		INSERT INTO USERS(
+			USER_NO, 
+			USER_ID, 
+			USER_PWD, 
+			USER_NAME, 
+			EMAIL, 
+			PHONE, 
+			ZIP_NUM, 
+			ADDRESS1, 
+			ADDRESS2,
+			ENAVLED,
+			REGDATE
+		) 
+		VALUES(
+			SEQ_USERS.NEXTVAL, 
+			#{user_id, jdbcType=VARCHAR, javaType=string}, 
+			#{user_pwd, jdbcType=VARCHAR, javaType=string}, 
+			#{user_name, jdbcType=VARCHAR, javaType=string},
+			#{email, jdbcType=VARCHAR, javaType=string}, 
+			#{phone, jdbcType=VARCHAR, javaType=string}, 
+			#{zip_num, jdbcType=VARCHAR, javaType=string}, 
+			#{address1, jdbcType=VARCHAR, javaType=string}, 
+			#{address2, jdbcType=VARCHAR, javaType=string}, 
+			1 ,
+			SYSDATE
+		)
+	</insert>
+	
+	<insert id="insertUserRole" parameterType="UserRole">
+		INSERT INTO USER_ROLE(
+			USER_ROLE_ID, 
+			USER_ID, 
+			ROLE_ID
+		) 
+		VALUES(
+			SEQ_USER_ROLE_ID.NEXTVAL, 
+			#{user_id, jdbcType=VARCHAR, javaType=string}, 
+			#{role_id, jdbcType=VARCHAR, javaType=string}
+		)
+	</insert>	
+</mapper>

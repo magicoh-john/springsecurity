@@ -1,0 +1,484 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.magicoh.springmvc.dao.IProductMapperDao"> <!-- namespace 생성 양식 : 패키지명.인터페이스명  -->
+
+	<!-- Category -->
+	<select id="selectCategoryList" resultType="Category">  <!-- com.magicoh.springmvc.dao.IDao 인터페이스에 있는 listDao  --> 
+		SELECT CATEGORY_ID, CATEGORY_NAME, DESCRIPTION, IS_ACTIVE
+		FROM CATEGORY
+		WHERE IS_ACTIVE = '1'
+		ORDER BY CATEGORY_ID ASC
+	</select>
+
+	<select id="selectCategory" parameterType="int" resultType="Category"> 
+		SELECT CATEGORY_ID, CATEGORY_NAME, DESCRIPTION, IS_ACTIVE 
+		FROM CATEGORY  
+		WHERE CATEGORY_ID = #{param1}
+	</select>
+
+	<insert id = "insertCategory" parameterType="Category">
+		INSERT INTO CATEGORY(CATEGORY_ID, CATEGORY_NAME, DESCRIPTION, IS_ACTIVE) 
+		VALUES(seq_category.nextval, #{category_name}, #{description}, 1)
+	</insert>
+
+	<update id = "updateCategory" parameterType="Category"> 
+		UPDATE Category SET 
+		CATEGORY_NAME = #{category_name}, 
+		DESCRIPTION = #{description},
+		IS_ACTIVE = #{is_active}
+		WHERE CATEGORY_ID = #{category_id}
+	</update>	
+	
+	<delete id = "deleteCategory" parameterType="int"> <!-- deleteDao -->
+		UPDATE Category SET 
+		is_active = 0
+		WHERE category_id = #{param1}
+	</delete>
+
+	<!-- select clients by name -->
+	<select id="selectCategorysByName2" parameterType="String" resultType="Category"> 
+	<![CDATA[ 
+		SELECT CATEGORY_ID, CATEGORY_NAME, DESCRIPTION, IS_ACTIVE 
+		FROM CATEGORY  
+		WHERE 1 = 1
+		AND IS_ACTIVE = '1'
+		
+	]]>	
+		<if test="category_name != null and category_name != ''">
+			AND CATEGORY_NAME LIKE '%'||#{param1}||'%'
+		</if>
+		ORDER BY category_name ASC
+	</select>
+
+	<!-- select clients by name -->
+	<select id="selectCategorysByName" parameterType="Category" resultType="Category"> 
+	<![CDATA[ 
+		SELECT CATEGORY_ID, CATEGORY_NAME, DESCRIPTION, IS_ACTIVE 
+		FROM CATEGORY  
+		WHERE 1 = 1
+		AND IS_ACTIVE = '1'
+	]]>	
+		<if test="category_name != null and category_name != ''">
+			AND CATEGORY_NAME LIKE '%'||#{category_name}||'%'
+		</if>
+		ORDER BY category_name ASC
+	</select>
+
+
+	<!-- Product -->
+	<!-- select All -->
+	<select id="selectProductList" resultType="Product"> 
+		<![CDATA[ 
+		SELECT P.PRODUCT_ID, 
+			P.PRODUCT_NAME, 
+			P.BRAND, 
+			P.UNIT_PRICE, 
+			P.CATEGORY_ID, 
+			C.CATEGORY_NAME, 
+			P.IS_ACTIVE, 
+			P.RECEIPT_DATE AS RECEIPT_DATE
+		FROM PRODUCT P 
+        INNER JOIN CATEGORY C ON P.CATEGORY_ID = C.CATEGORY_ID
+		WHERE 1 = 1
+		AND P.IS_ACTIVE = '1'
+		ORDER BY P.PRODUCT_ID DESC
+		]]>
+	</select>
+
+	<!-- search Products By Name in product modal-->
+	<select id="selectProductsByName" parameterType="String" resultType="Product">  <!-- com.magicoh.springmvc.dao.IDao 인터페이스에 있는 listDao  --> 
+		<![CDATA[ 	
+		SELECT P.PRODUCT_ID, 
+			P.PRODUCT_NAME, 
+			P.BRAND, 
+			P.UNIT_PRICE, 
+			P.CATEGORY_ID, 
+			P.IS_ACTIVE, 
+			C.CATEGORY_NAME, 
+			P.RECEIPT_DATE AS RECEIPT_DATE_FROM
+		FROM product P 
+        INNER JOIN CATEGORY C ON P.CATEGORY_ID = C.CATEGORY_ID
+		WHERE 1 = 1
+		AND P.PRODUCT_NAME LIKE '%'||#{product_name}||'%'
+        AND P.IS_ACTIVE = '1'
+		ORDER BY P.product_id DESC
+		]]>
+	</select>
+	
+	<!-- select Products By Name in product_list.jsp-->
+	<select id="selectProductsByName2" parameterType="Product" resultType="Product">  <!-- com.magicoh.springmvc.dao.IDao 인터페이스에 있는 listDao  --> 
+		<![CDATA[ 	
+		SELECT P.PRODUCT_ID, 
+			P.PRODUCT_NAME, 
+			P.BRAND, 
+			P.UNIT_PRICE, 
+			P.CATEGORY_ID, 
+			P.IS_ACTIVE, 
+			C.CATEGORY_NAME, 
+			P.RECEIPT_DATE AS RECEIPT_DATE
+		FROM PRODUCT P 
+        INNER JOIN CATEGORY C ON P.CATEGORY_ID = C.CATEGORY_ID
+		WHERE 1 = 1
+		AND P.IS_ACTIVE = '1'
+		]]>
+		
+		<if test="product_id != null and product_id != ''">
+			AND P.PRODUCT_ID = #{product_id}
+		</if>
+		<if test="product_name != null and product_name != ''">
+			AND P.PRODUCT_NAME LIKE '%'||#{product_name}||'%'
+		</if>
+		<if test="brand != null and brand != ''">
+			AND P.BRAND LIKE '%'||#{brand}||'%'
+		</if>
+		<if test="category_id != null and category_id != ''">
+			AND P.CATEGORY_ID = #{category_id}
+		</if>
+		<if test="receipt_date_from != null and receipt_date_from != ''">
+		<![CDATA[ 
+			AND TO_char(P.RECEIPT_DATE, 'yyyy-mm-dd')  >= #{receipt_date_from}
+		]]>
+		</if>
+		<if test="receipt_date_to != null and receipt_date_to != ''">
+		<![CDATA[
+			AND TO_char(P.RECEIPT_DATE, 'yyyy-mm-dd') <= #{receipt_date_to}
+		]]>	
+		</if>
+		ORDER BY P.PRODUCT_ID DESC
+	</select>
+
+	<!-- select product by id-->
+	<select id="selectProduct" parameterType="int" resultType="Product"> 
+	SELECT P.PRODUCT_ID, 
+			P.PRODUCT_NAME, 
+			P.BRAND, 
+			P.DESCRIPTION, 
+			P.UNIT_PRICE, 
+			P.CATEGORY_ID, 
+			P.IS_ACTIVE, 
+			C.CATEGORY_NAME, 
+			P.RECEIPT_DATE AS RECEIPT_DATE
+		FROM PRODUCT P 
+        INNER JOIN CATEGORY C ON P.CATEGORY_ID = C.CATEGORY_ID
+		WHERE 1 = 1
+			AND P.PRODUCT_ID = #{param1}
+			AND P.IS_ACTIVE = '1'
+	</select>
+
+	<!-- insert product -->
+	<insert id = "insertProduct" parameterType="Product">
+		INSERT INTO PRODUCT(
+			PRODUCT_ID, 
+			PRODUCT_NAME, 
+			BRAND, 
+			DESCRIPTION, 
+			UNIT_PRICE, 
+			CATEGORY_ID, 
+			RECEIPT_DATE, 
+			IS_ACTIVE) 
+		VALUES(
+			SEQ_PRODUCT.NEXTVAL, 
+			#{product_name}, 
+			#{brand}, 
+			#{description}, 
+			#{unit_price}, 
+			#{category_id}, 
+			#{receipt_date},
+			1)
+	</insert>
+	
+	<!-- product_update -->
+	<update id = "updateProduct" parameterType="Product"> 
+		UPDATE product SET
+		product_name = #{product_name},
+		brand = #{brand},
+		description = #{description},
+		unit_price = #{unit_price},
+		category_id = #{category_id}
+		WHERE product_id = #{product_id}
+	</update>		
+
+	<!-- delete Product -->	
+	<delete id = "deleteProduct" parameterType="int"> 
+		UPDATE product SET 
+		is_active = 0
+		WHERE product_id = #{param1}
+	</delete>
+
+	<!-- Client -->
+	<!-- select All -->
+	<select id="selectClientList" resultType="Client"> 
+		SELECT client_id, client_name, address, is_active
+		FROM Client
+		WHERE is_active = 1
+		ORDER BY client_id ASC
+	</select>
+
+	<!-- select clients by name -->
+	<select id="selectClientsByName" resultType="Client"> 
+		SELECT client_id, client_name, address
+		FROM Client
+		WHERE is_active = 1
+		AND client_name LIKE '%'||#{client_name}||'%'
+		ORDER BY client_name ASC
+	</select>
+
+	<!-- Invoice -->
+	<!-- ResultMap for invoiceHeaderMap -->
+	<resultMap id="invoiceHeaderMap" type="InvoiceCommonDto">
+		<id property="invoice_id" column="INVOICE_ID" />
+		<result property="client_name" column="CLIENT_NAME" />
+		<result property="client_id" column="CLIENT_ID" />
+		<result property="total_amt" column="TOTAL_AMT" />
+		<result property="invoice_date" column="INVOICE_DATE" />
+		<result property="shipping_address" column="SHIPPING_ADDRESS" />
+	</resultMap>
+
+	<!-- select all Invoice Header List -->
+	<select id="getInvoiceList" resultMap="invoiceHeaderMap">
+	<![CDATA[ 
+		SELECT H.INVOICE_ID, 
+			C.CLIENT_NAME, 
+			H.CLIENT_ID, 
+			H.TOTAL_AMT, 
+			H.INVOICE_DATE AS INVOICE_DATE, 
+			C.ADDRESS  AS SHIPPING_ADDRESS
+		FROM INVOICEHEADER H
+		INNER JOIN CLIENT C ON H.CLIENT_ID = C.CLIENT_ID
+		ORDER BY H.INVOICE_ID DESC
+	]]>	
+	</select>
+
+	<resultMap id="invoiceHeaderMap2" type="InvoiceCommonDto">
+		<id property="invoice_id" column="INVOICE_ID" />
+		<result property="client_id" column="CLIENT_ID" />
+		<result property="client_name" column="CLIENT_NAME" />
+		<result property="total_amt" column="TOTAL_AMT" />
+		<result property="invoice_date" column="INVOICE_DATE" />
+		<result property="shipping_address" column="SHIPPING_ADDRESS" />
+	</resultMap>
+
+	<!-- select Invoice Header List suitable for various conditions -->
+	<select id="getInvoiceListByCon" parameterType="InvoiceCommonDto" resultMap="invoiceHeaderMap2">
+		<![CDATA[ 
+		SELECT DISTINCT H.INVOICE_ID, 
+				H.CLIENT_ID, 
+				C.CLIENT_NAME, 
+				H.TOTAL_AMT,
+				H.INVOICE_DATE AS INVOICE_DATE, 
+				C.ADDRESS  AS SHIPPING_ADDRESS
+		FROM INVOICEHEADER H
+			INNER JOIN INVOICEDETAIL D ON H.INVOICE_ID = D.INVOICE_ID
+			INNER JOIN CLIENT C ON H.CLIENT_ID = C.CLIENT_ID
+			INNER JOIN PRODUCT P ON D.PRODUCT_ID = P.PRODUCT_ID
+		WHERE 1 = 1
+	 	]]>	 
+		<if test="invoice_id != null and invoice_id != ''">
+			AND H.INVOICE_ID = #{invoice_id}
+		</if>
+		<if test="client_id != null and client_id != ''">
+			AND H.CLIENT_ID = #{client_id}
+		</if>
+		<if test="product_id != null and product_id != ''">
+			AND D.PRODUCT_ID = #{product_id}
+		</if>
+		<if test="category_id != null and category_id != ''">
+			AND P.CATEGORY_ID  = #{category_id}
+		</if>
+		<if test="invoice_date_from != null and invoice_date_from != ''">
+		<![CDATA[ 
+ 			AND TO_CHAR(H.INVOICE_DATE, 'YYYY-MM-DD') >= #{invoice_date_from} 
+ 		]]> 
+		</if>
+		<if test="invoice_date_to != null and invoice_date_to != ''">
+		<![CDATA[
+ 			AND TO_CHAR(H.INVOICE_DATE, 'YYYY-MM-DD') <= #{invoice_date_to} 
+ 		]]>	 
+		</if>
+	</select> 
+
+	<!-- invoice Detail Map -->
+	<resultMap id="invoiceDetailMap" type="InvoiceCommonDto">
+		<id property="invoice_id" column="INVOICE_ID" />
+		<result property="client_id" column="CLIENT_ID" />
+		<result property="client_name" column="CLIENT_NAME" />
+		<result property="created_date" column="CREATED_DATE" />
+		<result property="shipping_address" column="SHIPPING_ADDRESS" />
+		<result property="total_amt" column="TOTAL_AMT" />
+		<result property="product_name" column="PRODUCT_NAME" />
+		<result property="product_id" column="PRODUCT_ID" />
+		<result property="unit_price" column="UNIT_PRICE" />
+		<result property="quantity" column="QUANTITY" />
+		<result property="sub_total_amt" column="SUB_TOTAL_AMT" />
+	</resultMap>
+	<!-- select one invoiceDetail for invoie Insert and invoice Update -->
+	<select id="getInvoiceDetail" parameterType="int" resultMap="invoiceDetailMap"> 
+	<![CDATA[ 
+		SELECT 
+			H.INVOICE_ID, H.CLIENT_ID, C.CLIENT_NAME, H.TOTAL_AMT, H.SHIPPING_ADDRESS, H.CREATED_DATE,
+	        D.INVOICE_DETAIL_ID, D.PRODUCT_ID, P.PRODUCT_NAME, 
+	       	D.UNIT_PRICE, D.QUANTITY, D.TOTAL_AMT AS SUB_TOTAL_AMT
+		FROM INVOICEDETAIL D 
+	        INNER JOIN INVOICEHEADER H
+			ON D.INVOICE_ID = H.INVOICE_ID
+	        LEFT OUTER JOIN CLIENT C
+	        ON H.CLIENT_ID = C.CLIENT_ID
+	        LEFT OUTER JOIN PRODUCT P
+			ON D.PRODUCT_ID = P.PRODUCT_ID
+        WHERE D.INVOICE_ID = #{invoice_id}
+		ORDER BY D.INVOICE_DETAIL_ID ASC 
+	]]>		
+	</select>
+	
+	<!-- ResultMap for invoiceHeaderMap -->
+	<resultMap id="invoiceHeaderMap3" type="InvoiceCommonDto">
+		<id property="invoice_id" column="INVOICE_ID" />
+		<result property="client_name" column="CLIENT_NAME" />
+		<result property="client_id" column="CLIENT_ID" />
+		<result property="invoice_date" column="INVOICE_DATE" />
+		<result property="total_amt" column="TOTAL_AMT" />
+		<result property="description" column="DESCRIPTION" />
+		<result property="shipping_address" column="SHIPPING_ADDRESS" />
+	</resultMap>
+	<!-- select one invoiceHeader -->
+	<select id="selectInvoiceHeader" parameterType="int" resultMap="invoiceHeaderMap3">
+	<![CDATA[  
+		SELECT H.INVOICE_ID,
+			C.CLIENT_NAME, 
+			H.CLIENT_ID,  
+			H.INVOICE_DATE, 
+			H.TOTAL_AMT, 
+			H.DESCRIPTION,
+			H.SHIPPING_ADDRESS
+		FROM INVOICEHEADER H
+		INNER JOIN CLIENT C ON H.CLIENT_ID = C.CLIENT_ID
+		WHERE H.INVOICE_ID = #{param1}
+		ORDER BY H.INVOICE_ID DESC
+	]]>	
+	</select>
+	
+	<!-- invoice header update 사용 -->
+	<select id="getInvoiceHeaderForUpdate" parameterType="int" resultType="InvoiceHeader">
+	<![CDATA[  
+		SELECT H.INVOICE_ID,
+			H.CLIENT_ID,  
+			H.INVOICE_DATE, 
+			H.TOTAL_AMT, 
+			H.SHIPPING_ADDRESS
+		FROM INVOICEHEADER H
+		WHERE H.INVOICE_ID = #{param1}
+		ORDER BY H.INVOICE_ID DESC
+	]]>	
+	</select>
+	
+	<!-- get max invoice id -->
+	<select id = "getMaxInvoiceId" resultType="int">
+		SELECT MAX(INVOICE_ID) FROM INVOICEHEADER
+	</select>
+	
+	<!-- insert invoice -->
+	<insert id = "insertInvoiceDetail" parameterType="InvoiceDetail">
+	<![CDATA[ 	
+		INSERT INTO INVOICEDETAIL(
+			INVOICE_DETAIL_ID, 
+			INVOICE_ID,
+			PRODUCT_ID,
+			UNIT_PRICE,
+			QUANTITY,
+			TOTAL_AMT,
+			CREATED_DATE)
+		VALUES(
+			SEQ_INVOICE_DETAIL.NEXTVAL, 
+			#{invoice_id, jdbcType=INTEGER}, 
+			#{product_id, jdbcType=INTEGER}, 
+			#{unit_price, jdbcType=NUMERIC}, 
+			#{quantity, jdbcType=INTEGER}, 
+			#{total_amt, jdbcType=NUMERIC}, 
+			SYSDATE)
+	]]>			
+	</insert>
+	
+	<!-- insert invoice -->
+	<insert id = "insertInvoiceDetailsMulti" parameterType="java.util.List">
+			INSERT INTO INVOICEDETAIL
+			(
+				INVOICE_DETAIL_ID,
+				INVOICE_ID,
+				PRODUCT_ID,
+				UNIT_PRICE,
+				QUANTITY,
+				TOTAL_AMT,
+				CREATED_DATE
+			)
+			SELECT SEQ_INVOICE_DETAIL.NEXTVAL, A.* FROM(
+			<foreach collection="list" item="invoiceDetail" separator="UNION ALL "> 			 
+			SELECT #{invoiceDetail.invoice_id}, 
+				#{invoiceDetail.product_id}, 
+				#{invoiceDetail.unit_price},
+				#{invoiceDetail.quantity},
+				#{invoiceDetail.total_amt},
+				SYSDATE
+			FROM DUAL	
+			</foreach>)A
+	</insert>	
+
+	
+	
+	<!-- insert invoice -->
+	<insert id = "insertInvoiceHeader" parameterType="InvoiceHeader">
+	<![CDATA[
+		INSERT INTO INVOICEHEADER(
+			INVOICE_ID,
+			CLIENT_ID,
+			INVOICE_DATE,
+			SHIPPING_ADDRESS,
+			TOTAL_AMT,
+			DESCRIPTION,
+			CREATED_DATE)
+		VALUES(
+			#{invoice_id, jdbcType=INTEGER }, 
+			#{client_id, jdbcType=INTEGER }, 
+			#{invoice_date}, 
+			#{shipping_address, jdbcType=VARCHAR}, 
+			#{total_amt, jdbcType=NUMERIC }, 
+			#{description, jdbcType=VARCHAR}, 
+			SYSDATE)
+	]]>		
+	</insert>
+	
+	<!-- invoice header update -->
+	<update id = "updateInvoiceHeader" parameterType="InvoiceHeader"> 
+	<![CDATA[
+		UPDATE 
+			INVOICEHEADER 
+		SET 
+			CLIENT_ID = #{client_id}, 
+			INVOICE_DATE = #{invoice_date},
+			TOTAL_AMT = #{total_amt},
+			DESCRIPTION = #{description},
+			MODIFIED_DATE = sysdate
+		WHERE INVOICE_ID = #{invoice_id}
+	]]>			
+	</update>	
+
+	<!-- insert details update -->
+	<update id = "updateInvoiceDetailsMulti" parameterType="java.util.List">
+		<foreach collection="list" item="invoiceDetail" index="idx" separator=";" open="DECLARE BEGIN" close="; END;"> 
+			UPDATE 
+				INVOICEDETAIL 
+			SET
+				PRODUCT_ID = #{invoiceDetail.product_id}, 
+				UNIT_PRICE = #{invoiceDetail.unit_price},
+				QUANTITY = #{invoiceDetail.quantity},
+				TOTAL_AMT = #{invoiceDetail.total_amt},
+				MODIFIED_DATE = SYSDATE
+			WHERE INVOICE_DETAIL_ID = #{invoiceDetail.invoice_detail_id} 
+		</foreach>
+	</update>	
+
+	
+	
+</mapper>

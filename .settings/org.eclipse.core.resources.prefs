@@ -1,0 +1,5 @@
+eclipse.preferences.version=1
+encoding//src/main/java/com/magicoh/springmvc/controller/AuthController.java=UTF-8
+encoding//src/main/java/com/magicoh/springmvc/controller/SalesController.java=UTF-8
+encoding//src/main/java/com/magicoh/springmvc/service/user/CustomProvider.java=UTF-8
+encoding//src/main/webapp/WEB-INF/views/error/403.jsp=UTF-8

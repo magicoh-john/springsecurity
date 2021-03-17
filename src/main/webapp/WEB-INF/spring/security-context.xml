@@ -1,0 +1,71 @@
+<beans:beans xmlns="http://www.springframework.org/schema/security"
+	xmlns:beans="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/security
+		http://www.springframework.org/schema/security/spring-security-4.2.xsd
+        http://www.springframework.org/schema/jee 
+        http://www.springframework.org/schema/jee/spring-jee.xsd
+        http://www.springframework.org/schema/beans 
+        http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+	<http auto-config="true" use-expressions="true">
+		<headers> <cache-control />	</headers>
+
+		<!-- use of csrf security tocken -->
+		<csrf disabled="false" />
+
+		<!-- Permission setting for access path(url) -->
+		<intercept-url pattern="/product/**" access="hasAnyRole('ROLE_USER', 'ROLE_ADMIN')" />
+		<intercept-url pattern="/sales/**" access="hasAnyRole('ROLE_USER', 'ROLE_ADMIN')" />
+		<intercept-url pattern="/user/**" access="hasAnyRole('ROLE_USER', 'ROLE_ADMIN')" />
+		<intercept-url pattern="/admin/**" access="hasRole('ROLE_ADMIN')" />
+		<intercept-url pattern="/**" access="permitAll" />
+
+		<!-- login-processing-url="/login" 로그인 폼의 action=값과 동일해야 함. -->
+		<form-login 
+			login-page="/login" 
+			default-target-url="/home"
+			username-parameter="user_id" 
+			password-parameter="user_pwd"
+			authentication-failure-url="/loginError" 
+		/>
+
+		<logout 
+			logout-url="/logout"
+			logout-success-url="/login" 
+			delete-cookies="JSESSIONID" 
+		/>
+
+		<access-denied-handler 
+			error-page="/access-denied" 
+		/>
+		<session-management>
+			<concurrency-control max-sessions="1" error-if-maximum-exceeded="true" />
+		</session-management>
+
+		<!-- error-if-maximum-exceeded="true" : 중복 로그인 방지 max-sessions : 최대 세션 
+			허용 개수 -->
+	</http>
+
+	<!-- 인증요청을 받고 Authentication을 채움. 실제 인증이 일어남 -->
+	<authentication-manager erase-credentials="true">
+		<authentication-provider ref="customProvider" />
+	</authentication-manager>
+
+	<beans:bean id="customProvider" class="com.magicoh.springmvc.service.user.CustomProvider">
+		<beans:property name="dataSource" ref="dataSource" />
+	</beans:bean>
+
+	<!-- 
+	<beans:bean id="authJdbcService"
+		class="com.magicoh.springmvc.service.user.AuthJdbcService">
+		<beans:property name="dataSource" ref="dataSource" />
+	</beans:bean>
+	-->
+
+	<beans:bean id="encoder"
+		class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder">
+		<beans:constructor-arg name="strength" value="20" />
+	</beans:bean>
+
+</beans:beans>

@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+		http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context 
+		http://www.springframework.org/schema/context/spring-context-4.2.xsd
+		http://www.springframework.org/schema/aop 
+		http://www.springframework.org/schema/aop/spring-aop-4.2.xsd
+		http://www.springframework.org/schema/tx 
+		http://www.springframework.org/schema/tx/spring-tx-4.2.xsd">
+
+	<!-- [Biz Component 스캔/생성 ] 베이스 패키지 선언  -->
+	<context:component-scan base-package="com.magicoh.springmvc.service"></context:component-scan>
+<!-- 	<context:component-scan base-package="com.magicoh.springmvc.service.aop"></context:component-scan> -->
+		
+	<!-- [DB연결용 외부파일] DataSource 설정용 외부 프로퍼티 파일 참조 -->
+	<context:property-placeholder location="/WEB-INF/config/database.properties"/>
+
+	<!-- [AOP 명시적 Annotation 트랜잭션] AOP 를 Annotation 기반으로 구현하겠다.
+		(현재는 XML기반이므로 필요없음) Aspect Class를 만들어야 한다.
+		현재는 명시적 선언 방법 선호하는 추세-->		
+	<!-- 프록시 생성 AOP 를 Annotation 기반으로 구현하겠다-->
+		<aop:aspectj-autoproxy></aop:aspectj-autoproxy>
+	<!-- 	<tx:annotation-driven transaction-manager="transactionManager" proxy-target-class="true" />	 -->
+		
+	<!-- [DataSource] Bean 등록 -->
+	<!--  
+	<bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource">
+		<property name="driverClassName" value="${jdbc.driver}"></property>
+		<property name="url" value="${jdbc.url}"></property>
+		<property name="username" value="${jdbc.username}"></property>
+		<property name="password" value="${jdbc.password}"></property>
+	</bean>
+	-->
+	
+	<!-- Log printing -->
+	<bean id="dataSourceSpied" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+		<property name="driverClassName" value="${jdbc.driver}"></property>
+		<property name="url" value="${jdbc.url}"></property>
+		<property name="username" value="${jdbc.username}"></property>
+		<property name="password" value="${jdbc.password}"></property>
+	</bean>
+	<bean id="dataSource" class="net.sf.log4jdbc.Log4jdbcProxyDataSource"> 
+	    <constructor-arg ref="dataSourceSpied" /> 
+	    <property name="logFormatter"> 
+	        <bean class="net.sf.log4jdbc.tools.Log4JdbcCustomFormatter"> 
+	            <property name="loggingType" value="MULTI_LINE" /> 
+	            <property name="sqlPrefix" value="SQL : "/> 
+	        </bean> 
+	    </property> 
+	</bean>
+
+
+	<!-- [Spring JDBC Template Bean] -->
+	<!-- 
+	<bean id="template" class="org.springframework.jdbc.core.JdbcTemplate">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+	-->
+	
+	<!-- [매퍼 인터페이스 설정] 여러개의 매퍼 인터페이스가 존재할 경우에 @MyMapper라는 custom 인터페이스를 만들어서 적용 -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<!-- 매퍼 인터페이스가 들어있는 경로를 베이스 패키지로 지정. 그 지정된 경로 안의 모든 인터페이스들은 매퍼 인터페이스 자격 -->
+		<property name="basePackage" value="com.magicoh.springmvc.dao" /> 
+		<!-- 위의 basePackage 내에 있는 인터페이스들 중에서 @MyMapper Annotation 표시가 된 인터페이스만이 매퍼 인터페이스(매퍼 인터페이스가 아닌 경우는 제외시키기 위해서) -->
+		<property name="annotationClass" value="com.magicoh.springmvc.dao.MyMapper" /> 
+	</bean>
+
+	<!-- [SqlSessionFactoryBean] mybatis main config - SqlMapConfig.xml(typeAliases) and mapper file -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+<!-- 		<property name="transactionFactory">  -->
+<!-- 		    	<bean class="org.apache.ibatis.transaction.managed.ManagedTransactionFactory" /> -->
+<!-- 		</property>		 -->
+		<property name="configLocation" value="classpath:/mybatisConfig/mybatis-config.xml" />
+		<!-- 런타임 시 SqlSessionFactory에 MyBatis mapper 파일들의 경로가 설정된다. ~/mapper/**/*.xml 일괄 등록해도 됨-->
+		<property name="mapperLocations" value="classpath:/mapper/**/*Mapper.xml" />
+	</bean>
+
+	<bean id="sqlSession" class="org.mybatis.spring.SqlSessionTemplate">
+		<constructor-arg index="0" ref="sqlSessionFactory" />
+	</bean>
+	
+	
+	<!-- [트랜잭션 관리자] AOP에서 사용할 트랜잭션 관리자 Bean 등록 -->
+	<bean id="transactionManager" 
+			class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource"></property>
+	</bean>
+	
+	<!-- [AOP 선언적 트랜잭션] -->
+	<tx:advice id="txAdvice" transaction-manager="transactionManager">
+		<tx:attributes>
+			<tx:method name="get*" read-only="true"/>
+			<tx:method name="select*" read-only="true"/>
+			<tx:method name="insert*" rollback-for="Exception" propagation="REQUIRED"/> <!-- propagation="REQUIRED" rollback-for="Throwable" -->
+			<tx:method name="update*" rollback-for="Exception" propagation="REQUIRED"/>
+			<tx:method name="delete*" rollback-for="Exception" propagation="REQUIRED"/>
+			<tx:method name="*" />
+		</tx:attributes>
+	</tx:advice>
+	<aop:config>
+		<aop:pointcut id="transactionPointcut" 
+						expression="execution(* com.magicoh.springmvc.service..*Impl.*(..))" />
+		<aop:advisor id="transactionAdvisor" 
+						advice-ref="txAdvice" 
+						pointcut-ref="transactionPointcut"/>
+	</aop:config>	
+	
+	<!-- MyBatis 매퍼 인터페이스 설정(이 방법 보다는 MapperScannerConfigurer 가 더 최신 방법) -->
+	<!--  MapperFactoryBean이 IBbsMapper 인터페이스를 구현하는 프록시 클래스를 생성해주고 그걸 Application에 주입 까지 해준다.  -->
+	<!--  
+	<bean id="bbsMapper" class="org.mybatis.spring.mapper.MapperFactoryBean">   
+		<property name="mapperInterface" value="com.magicoh.springmvc.dao.IBbsMapper" />
+		<property name="sqlSessionTemplate" ref="sqlSession" />		
+	</bean>
+	-->
+
+		
+</beans>
