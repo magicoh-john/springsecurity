@@ -40,6 +40,8 @@ public class BbsController
 	
 	/***************************************
 	 * QnA[qna list] 
+	 * 다른 개발자가 수정한 내용입니다.
+	 * 개발자 여러분들은 이 내용을 본인의 로컬 저장소에 다운로드하세요.
 	 **************************************/
 	@RequestMapping(value = "/qna_list", method = RequestMethod.GET)
 	public String getQnaList(Model model) throws Exception
